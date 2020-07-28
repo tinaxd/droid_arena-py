@@ -1,5 +1,6 @@
 import math
 from arena.vector import Vector2D
+import arena.command as acmd
 
 
 class Droid:
@@ -23,11 +24,11 @@ class Droid:
 
     def next_command(self, env):
         cmd = self._cmds[self._cmd_index]
-        if cmd.type == 0:
+        if cmd.type == acmd.MOVE_F:
             self.pos += self.front_vec * env.dt
-        elif cmd.type == 1:
+        elif cmd.type == acmd.MOVE_B:
             self.pos -= self.front_vec * env.dt
-        elif cmd.type == 2:
+        elif cmd.type == acmd.TURN_L:
             self.rot += math.pi / 2
-        elif cmd.type == 3:
+        elif cmd.type == acmd.TURN_R:
             self.rot -= math.pi / 2
