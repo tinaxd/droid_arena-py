@@ -1,6 +1,6 @@
 class Command:
     def __init__(self):
-        pass
+        self.type = None
 
 
 MOVE_F = 0
