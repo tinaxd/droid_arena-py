@@ -27,12 +27,21 @@ class Droid:
         return Vector2D(math.cos(self.rot), math.sin(self.rot))
 
     def next_command(self, env) -> None:
+        self._update_command(env)
         cmd = self._cmds[self._cmd_index]
         if cmd.type == acmd.MOVE_F:
             self.pos += self.front_vec * env.dt * 17.0
         elif cmd.type == acmd.MOVE_B:
             self.pos -= self.front_vec * env.dt * 17.0
         elif cmd.type == acmd.TURN_L:
-            self.rot += math.pi / 2
+            self.rot += math.pi / 2.0 / self._cmd_timeout * env.dt
         elif cmd.type == acmd.TURN_R:
-            self.rot -= math.pi / 2
+            self.rot -= math.pi / 2.0 / self._cmd_timeout * env.dt
+
+    def _update_command(self, env) -> None:
+        self._cmd_exec_time += env.dt
+        if self._cmd_exec_time > self._cmd_timeout:
+            self._cmd_exec_time = 0.0
+            self._cmd_index += 1
+            if self._cmd_index >= len(self._cmds):
+                self._cmd_index = 0

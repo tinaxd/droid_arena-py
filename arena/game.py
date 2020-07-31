@@ -57,8 +57,8 @@ class Environment:
 
 if __name__ == '__main__':
     g = Game()
-    d1 = Droid('player', Vector2D(320.0, 480.0), 0.0, 0xff0000ff, [acmd.MoveCommand(acmd.MOVE_F)])
-    d2 = Droid('enemy', Vector2D(320.0, 160.0), 0.0, 0xffff00ff, [acmd.MoveCommand(acmd.MOVE_B)])
+    d1 = Droid('player', Vector2D(320.0, 480.0), 0.0, 0xff0000ff, [acmd.MoveCommand(acmd.MOVE_F), acmd.MoveCommand(acmd.TURN_L)])
+    d2 = Droid('enemy', Vector2D(320.0, 160.0), 0.0, 0xffff00ff, [acmd.MoveCommand(acmd.MOVE_B), acmd.MoveCommand(acmd.TURN_L)])
     g.add_droid(d1)
     g.add_droid(d2)
     g.run()
