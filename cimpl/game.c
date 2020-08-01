@@ -14,7 +14,8 @@ DroidList *init_droid_list()
 
 void free_droid_list(DroidList *list)
 {
-    for (size_t i=0; i<list->n ;i++) {
+    for (size_t i = 0; i < list->n; i++)
+    {
         free_droid(list->droids[i]);
         free(list->droids[i]);
     }
@@ -26,7 +27,8 @@ void free_droid_list(DroidList *list)
 
 void droid_list_add(DroidList *list, DroidState *droid)
 {
-    if (list->n >= list->cap) {
+    if (list->n >= list->cap)
+    {
         list->cap *= 2;
         list->droids = (DroidState **)realloc(list->droids, sizeof(DroidState *) * list->cap);
     }
@@ -36,6 +38,63 @@ void droid_list_add(DroidList *list, DroidState *droid)
 }
 
 //void droid_list_remove_destroyed(DroidList *list);
+
+ShotList *init_shot_list()
+{
+    ShotList *list = (ShotList *)malloc(sizeof(ShotList));
+    list->n = 0;
+    list->cap = 2;
+    list->shots = (Shot **)malloc(sizeof(Shot *) * list->cap);
+    return list;
+}
+
+void free_shot_list(ShotList *list)
+{
+    for (size_t i = 0; i < list->n; i++)
+    {
+        free_shot(list->shots[i]);
+        free(list->shots[i]);
+    }
+    free(list->shots);
+    list->n = 0;
+    list->cap = 0;
+    list->shots = NULL;
+}
+
+void shot_list_add(ShotList *list, Shot *shot)
+{
+    if (list->n >= list->cap)
+    {
+        list->cap *= 2;
+        list->shots = (Shot **)realloc(list->shots, sizeof(Shot *) * list->cap);
+    }
+
+    list->shots[list->n] = shot;
+    list->n++;
+}
+
+void shot_list_remove_destroyed(ShotList *list)
+{
+    int removed = 0;
+    size_t index = 0;
+    for (size_t i=0; i<list->n; i++) {
+        if (list->shots[i]->destroyed) {
+            index = i;
+            removed = 1;
+            break;
+        }
+    }
+
+    if (removed) {
+        Shot *tmp = list->shots[index];
+        list->shots[index] = list->shots[list->n - 1];
+        list->shots[list->n - 1] = tmp;
+        free_shot(list->shots[list->n - 1]);
+        list->shots[list->n - 1] = NULL;
+        list->n--;
+        shot_list_remove_destroyed(list);
+    }
+}
 
 GameInstance *new_game_instance()
 {
@@ -60,6 +119,9 @@ GameInstance *new_game_instance()
     game->droids = init_droid_list();
     assert(game->droids != NULL);
 
+    game->shots = init_shot_list();
+    assert(game->shots != NULL);
+
     game->lasttime = SDL_GetTicks();
     return game;
 }
@@ -75,6 +137,11 @@ void free_game_instance(GameInstance *game)
 void game_add_droid(GameInstance *game, DroidState *droid)
 {
     droid_list_add(game->droids, droid);
+}
+
+void game_add_shot(GameInstance *game, Shot *shot)
+{
+    shot_list_add(game->shots, shot);
 }
 
 void game_process(GameInstance *game, uint32_t delta);
@@ -109,6 +176,14 @@ void game_run(GameInstance *game)
 
 void game_apply_env(GameInstance *game, struct Environment *env)
 {
+    for (size_t i=0; i<env->n_shots_queue_; i++) {
+        game_add_shot(game, env->shots_queue_[i]);
+    }
+    
+    free(env->shots_queue_);
+    env->shots_queue_ = NULL;
+    env->n_shots_queue_ = 0;
+    env->c_shots_queue_ = 0;
 }
 
 void game_process(GameInstance *game, uint32_t delta)
@@ -117,17 +192,44 @@ void game_process(GameInstance *game, uint32_t delta)
     env.dt = delta / 1000.0;
     env.n_droids_ = game->droids->n;
     env.droids_ = game->droids->droids;
+    env.n_shots_queue_ = 0;
+    env.c_shots_queue_ = 0;
+    env.shots_queue_ = NULL;
 
     for (size_t i = 0; i < game->droids->n; i++)
     {
         next_command(game->droids->droids[i], &env);
     }
     game_apply_env(game, &env);
+
+    for (size_t i = 0; i < game->shots->n; i++)
+    {
+        shot_process(game->shots->shots[i], &env);
+    }
+    game_apply_env(game, &env);
 }
 
 void game_process_collision(GameInstance *game, uint32_t delta)
 {
-    // TODO
+    for (size_t i = 0; i < game->shots->n; i++)
+    {
+        Shot *shot = game->shots->shots[i];
+        if (shot->destroyed)
+            continue;
+        for (size_t j = 0; j < game->droids->n; j++)
+        {
+            DroidState *droid = game->droids->droids[j];
+            if (droid->team == shot->shot_by)
+                continue;
+            if (shot_droid_hit(shot, droid))
+            {
+                droid_hit(droid, shot);
+                shot->destroyed = 1;
+                break;
+            }
+        }
+    }
+    shot_list_remove_destroyed(game->shots);
 }
 
 void game_render(GameInstance *game)
@@ -153,5 +255,17 @@ void game_render(GameInstance *game)
     }
 
     // Draw shots
-    // TODO
+    for (size_t i = 0; i < game->shots->n; i++)
+    {
+        const Shot *shot = game->shots->shots[i];
+        switch (shot->type)
+        {
+        case SHOT_SHELL:
+        {
+            int radius = ((struct ShellShotData *)shot->data_)->radius;
+            filledCircleRGBA(game->renderer,
+                             shot->x, shot->y, radius, 0, 0, 0, 255);
+        }
+        }
+    }
 }

@@ -2,7 +2,8 @@
 
 #include <math.h>
 
-typedef struct {
+typedef struct
+{
     short r;
     short g;
     short b;
@@ -19,10 +20,12 @@ static ColorRGBA color_complement(ColorRGBA color)
     return c;
 }
 
-static float vec_length(float x, float y) {
+static float vec_length(float x, float y)
+{
     return sqrt(x * x + y * y);
 }
 
-static float vec_dot(float x1, float y1, float x2, float y2) {
+static float vec_dot(float x1, float y1, float x2, float y2)
+{
     return x1 * x2 + y1 * y2;
 }

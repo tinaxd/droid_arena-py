@@ -7,9 +7,10 @@
 #include "util.h"
 
 struct Environment;
+typedef struct Shot Shot;
 
-
-typedef enum {
+typedef enum
+{
     DROID_CMD_MOVE_F,
     DROID_CMD_MOVE_B,
     DROID_CMD_TURN_L,
@@ -18,7 +19,8 @@ typedef enum {
     DROID_CMD_SHOT_SHELL,
 } DroidCommand;
 
-typedef struct {
+typedef struct
+{
     size_t n;
     DroidCommand *cmds;
     size_t cmd_index_;
@@ -30,12 +32,14 @@ typedef struct {
 DroidCommandDriver *make_cmd_driver(size_t n, const DroidCommand *cmds);
 void free_cmd_driver(DroidCommandDriver *driver);
 
-typedef enum {
+typedef enum
+{
     DROID_COMMAND,
     DROID_SCRIPTED,
 } DroidType;
 
-typedef struct {
+typedef struct
+{
     char *id;
     int team;
     float x;
@@ -54,3 +58,5 @@ void free_droid(DroidState *droid);
 void front_vector(const DroidState *droid, float *x, float *y);
 
 void next_command(DroidState *droid, struct Environment *env);
+
+void droid_hit(DroidState *droid, Shot *shot);

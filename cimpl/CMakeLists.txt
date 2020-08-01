@@ -14,6 +14,7 @@ add_executable (droid_arena
   droid.c
   game.c
   env.c
+  shot.c
 )
 target_include_directories (droid_arena PRIVATE ${SDL2_INCLUDE_DIRS})
 target_link_libraries (droid_arena ${SDL2_LINK_LIBRARIES} ${SDL2GFX_LINK_LIBRARIES})
