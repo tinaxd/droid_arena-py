@@ -2,7 +2,7 @@ import sdl2.ext # type: ignore
 import sdl2 # type: ignore
 import sdl2.sdlgfx # type: ignore
 from typing import TYPE_CHECKING, List, Optional, cast
-from arena.droid import Droid
+from arena.droid import Droid, ScriptedDroid
 from .shot import Shot, Shell
 from arena.vector import Vector2D
 import arena.command as acmd
@@ -123,6 +123,21 @@ class Environment:
         self._queue_shots.append(shot)
 
 if __name__ == '__main__':
+    src = """
+    time = 0.0
+    lastshot = 0.0
+
+    function update(info)
+        info.x = info.x + info.env.dt * 50
+        time = time + info.env.dt
+        if time - lastshot > 2.0 then
+            info.env.new_shot({type='shell'})
+            lastshot = time
+        end
+        return info
+    end
+    """
+
     g = Game()
     d1 = Droid('player', 0, Vector2D(320.0, 480.0), 0.0, 50, (255, 0, 0, 255),
                [acmd.MoveCommand(acmd.MOVE_F),
@@ -131,6 +146,8 @@ if __name__ == '__main__':
     d2 = Droid('enemy', 1, Vector2D(320.0, 160.0), 0.0, 50, (0, 255, 0, 255),
                [acmd.MoveCommand(acmd.MOVE_B),
                 acmd.MoveCommand(acmd.TURN_L)])
+    d3 = ScriptedDroid('spectator', 2, Vector2D(160.0, 320.0), 0.0, 50, (0, 0, 255, 255), src)
     g.add_droid(d1)
     g.add_droid(d2)
+    g.add_droid(d3)
     g.run()

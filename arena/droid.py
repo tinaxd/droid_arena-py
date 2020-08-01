@@ -3,6 +3,7 @@ from arena.vector import Vector2D
 import arena.command as acmd
 from typing import List, Tuple, TYPE_CHECKING
 from .shot import Shell
+import lupa # type: ignore
 
 
 if TYPE_CHECKING:
@@ -69,3 +70,46 @@ class Droid:
         self.hp -= shot.attack
         if self.hp <= 0:
             self.destroyed = True
+
+
+class ScriptedDroid(Droid):
+    def __init__(self, id: str, team: int, init_pos: Vector2D, init_rot: float, hp: int,
+                 color: Tuple[int, int, int, int], luasrc: str) -> None:
+        super(ScriptedDroid, self).__init__(id, team, init_pos, init_rot, hp, color, [])
+        self.lua = lupa.LuaRuntime()
+        self.lua.execute(luasrc)
+    
+    def set_commands(self, cmds) -> None:
+        pass
+    
+    @staticmethod
+    def _make_info(droid, env):
+        x, y = droid.pos.unpack()
+        def _find_nearest_enemy():
+            return ScriptedDroid._make_info(env.find_nearest_enemy(droid), env)
+        def _new_shot(shotinfo):
+            if shotinfo["type"] == "shell":
+                env.new_shot(Shell(droid.team, 5, droid.pos, droid.front_vec*100, 30.0))
+        return {
+            "id": droid.id,
+            "team": droid.team,
+            "x": x,
+            "y": y,
+            "rot": droid.rot,
+            "hp": droid.hp,
+            "env": {
+                "dt": env.dt,
+                "find_nearest_droid": _find_nearest_enemy,
+                "new_shot": _new_shot
+            }
+        }
+    
+    def _apply_info(self, info):
+        self.pos = Vector2D(info["x"], info["y"])
+        self.rot = info["rot"]
+        self.hp  = info["hp"]
+
+    def next_command(self, env) -> None:
+        update = self.lua.globals().update
+        info = update(ScriptedDroid._make_info(self, env))
+        self._apply_info(info)
