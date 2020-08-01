@@ -26,6 +26,7 @@ class Droid:
         self._cmd_exec_time = 0.0 # 現在の命令の実行時間
         self._cmd_timeout = 1.0 # 最大命令実行時間
         self._cmd_executed = False
+        self._cmd_angular_speed = None
     
     def set_commands(self, cmds: List[acmd.Command]) -> None:
         self._cmds = cmds
@@ -48,10 +49,12 @@ class Droid:
         elif cmd.type == acmd.TURN_R:
             self.rot += math.pi / 2.0 / self._cmd_timeout * env.dt
         elif cmd.type == acmd.TURN_ENEMY:
-            target = env.find_nearest_enemy(self)
-            r = target.pos - self.pos
-            angle = math.acos(self.front_vec.dot(r) / r.length())
-            self.rot -= angle / self._cmd_timeout * env.dt
+            if not self._cmd_angular_speed:
+                target = env.find_nearest_enemy(self)
+                r = target.pos - self.pos
+                angle = math.acos(self.front_vec.dot(r) / r.length())
+                self._cmd_angular_speed = - angle / self._cmd_timeout
+            self.rot -= self._cmd_angular_speed * env.dt
         elif cmd.type == acmd.SHOT_SHELL:
             if not self._cmd_executed:
                 env.new_shot(Shell(self.team, 5, self.pos, self.front_vec*100, 30.0))
@@ -60,6 +63,7 @@ class Droid:
     def _update_command(self, env) -> None:
         self._cmd_exec_time += env.dt
         if self._cmd_exec_time > self._cmd_timeout:
+            self._cmd_angular_speed = None
             self._cmd_executed = False
             self._cmd_exec_time = 0.0
             self._cmd_index += 1
