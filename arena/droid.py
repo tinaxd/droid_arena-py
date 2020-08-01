@@ -20,6 +20,7 @@ class Droid:
         self.rot = init_rot # 回転
         self.color = color
         self.hp = hp
+        self.max_hp = hp
         self.destroyed = False
         self._cmds = cmds # 命令リスト
         self._cmd_index = 0 # 次に実行すべき命令のインデックス

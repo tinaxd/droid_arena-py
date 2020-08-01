@@ -61,6 +61,7 @@ class Game:
                     shot.destroyed = True
                     break
         self.shots = [s for s in self.shots if not s.destroyed]
+        self.droids = [d for d in self.droids if not d.destroyed]
 
     def _apply_env_changes(self, env: 'Environment') -> None:
         for shot in env._queue_shots:
@@ -74,14 +75,28 @@ class Game:
         droid_radius = 30
         droid_dot_rad = 5
         droid_dot_from_center = 15
+        hp_height = 5
         for droid in self.droids:
             x, y = droid.pos.unpack()
+            # 本体
             sdl2.sdlgfx.filledCircleRGBA(self.renderer.sdlrenderer,
                                          int(x), int(y), droid_radius, *droid.color)
+            # ドット
             sdl2.sdlgfx.filledCircleRGBA(self.renderer.sdlrenderer,
                                          int(x + droid_dot_from_center * math.cos(droid.rot)),
                                          int(y + droid_dot_from_center * math.sin(droid.rot)),
                                          droid_dot_rad, *_color_inv(droid.color))
+            # 体力バー
+            hp_start_x = int(x - droid_radius)
+            hp_start_y = int(y - droid_radius - hp_height)
+            hp_end_x   = int(hp_start_x + 2 * droid_radius * (float(droid.hp) / droid.max_hp))
+            hp_end_y   = int(y - droid_radius)
+            sdl2.sdlgfx.rectangleRGBA(self.renderer.sdlrenderer,
+                                      hp_start_x, hp_start_y, int(x + droid_radius), hp_end_y,
+                                      0, 0, 0, 255)
+            sdl2.sdlgfx.boxRGBA(self.renderer.sdlrenderer,
+                                hp_start_x, hp_start_y, hp_end_x, hp_end_y,
+                                0, 0, 0, 255)
     
     def _render_shots(self) -> None:
         for shot in self.shots:
