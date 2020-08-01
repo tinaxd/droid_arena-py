@@ -5,10 +5,11 @@ from typing import List, Tuple
 
 
 class Droid:
-    def __init__(self, id: str, init_pos: Vector2D, init_rot: float,
+    def __init__(self, id: str, team: int, init_pos: Vector2D, init_rot: float,
                  color: Tuple[int, int, int, int],
                  cmds: List[acmd.Command]=[]) -> None:
         self.id = id # 識別ID
+        self.team = team # team ID
         self.pos = init_pos # 位置
         self.rot = init_rot # 回転
         self.color = color
@@ -37,6 +38,11 @@ class Droid:
             self.rot -= math.pi / 2.0 / self._cmd_timeout * env.dt
         elif cmd.type == acmd.TURN_R:
             self.rot += math.pi / 2.0 / self._cmd_timeout * env.dt
+        elif cmd.type == acmd.TURN_ENEMY:
+            target = env.find_nearest_enemy(self)
+            r = target.pos - self.pos
+            angle = math.acos(self.front_vec.dot(r) / r.length())
+            self.rot -= angle / self._cmd_timeout * env.dt
 
     def _update_command(self, env) -> None:
         self._cmd_exec_time += env.dt

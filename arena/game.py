@@ -38,8 +38,8 @@ class Game:
         sdl2.ext.quit()
     
     def _process(self, mdelta) -> None:
+        env = Environment(mdelta / 1000.0, self.droids)
         for droid in self.droids:
-            env = Environment(mdelta / 1000.0)
             droid.next_command(env)
 
     def _render(self) -> None:
@@ -61,14 +61,31 @@ class Game:
 
 
 class Environment:
-    def __init__(self, delta):
+    def __init__(self, delta, droids):
+        """
+        @param delta 前回の process からの経過時間. 単位は秒.
+        @param droids 全 Droid のリスト.
+        """
         self.dt = delta
+        self._droids = droids
+    
+    def find_nearest_enemy(self, droid):
+        """
+        droid から最も近い Droid のインスタンスを返す.
+        droid の他に Droid が存在しない場合は None を返す.
+        """
+        def _distance(other):
+            return (other.pos - droid.pos).length()
+        try:
+            return min([d for d in self._droids if d.team != droid.team], key=_distance)
+        except ValueError:
+            return None
 
 
 if __name__ == '__main__':
     g = Game()
-    d1 = Droid('player', Vector2D(320.0, 480.0), 0.0, (255, 0, 0, 255), [acmd.MoveCommand(acmd.MOVE_F), acmd.MoveCommand(acmd.TURN_L)])
-    d2 = Droid('enemy', Vector2D(320.0, 160.0), 0.0, (0, 255, 0, 255), [acmd.MoveCommand(acmd.MOVE_B), acmd.MoveCommand(acmd.TURN_L)])
+    d1 = Droid('player', 0, Vector2D(320.0, 480.0), 0.0, (255, 0, 0, 255), [acmd.MoveCommand(acmd.MOVE_F), acmd.MoveCommand(acmd.TURN_ENEMY)])
+    d2 = Droid('enemy', 1, Vector2D(320.0, 160.0), 0.0, (0, 255, 0, 255), [acmd.MoveCommand(acmd.MOVE_B), acmd.MoveCommand(acmd.TURN_L)])
     g.add_droid(d1)
     g.add_droid(d2)
     g.run()

@@ -7,6 +7,7 @@ MOVE_F = 0
 MOVE_B = 1
 TURN_L = 2
 TURN_R = 3
+TURN_ENEMY = 4
 
 
 class MoveCommand(Command):
