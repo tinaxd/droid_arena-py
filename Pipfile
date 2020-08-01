@@ -9,6 +9,7 @@ mypy = "*"
 
 [packages]
 pysdl2 = "*"
+lupa = "*"
 
 [requires]
 python_version = "3.8"
