@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List
 from arena.droid import Droid
 from arena.vector import Vector2D
 import arena.command as acmd
+import math
 
 
 class Game:
@@ -42,12 +43,21 @@ class Game:
             droid.next_command(env)
 
     def _render(self) -> None:
+        def _color_inv(color):
+            r, g, b, a = color
+            return 255 - r, 255 - g, 255 - b, a
         self.renderer.clear(sdl2.ext.Color(255, 255, 255, 0))
         droid_radius = 30
+        droid_dot_rad = 5
+        droid_dot_from_center = 15
         for droid in self.droids:
             x, y = droid.pos.unpack()
-            sdl2.sdlgfx.filledCircleColor(self.renderer.sdlrenderer,
-                                          int(x), int(y), droid_radius, droid.color)
+            sdl2.sdlgfx.filledCircleRGBA(self.renderer.sdlrenderer,
+                                         int(x), int(y), droid_radius, *droid.color)
+            sdl2.sdlgfx.filledCircleRGBA(self.renderer.sdlrenderer,
+                                         int(x + droid_dot_from_center * math.cos(droid.rot)),
+                                         int(y + droid_dot_from_center * math.sin(droid.rot)),
+                                         droid_dot_rad, *_color_inv(droid.color))
 
 
 class Environment:
@@ -57,8 +67,8 @@ class Environment:
 
 if __name__ == '__main__':
     g = Game()
-    d1 = Droid('player', Vector2D(320.0, 480.0), 0.0, 0xff0000ff, [acmd.MoveCommand(acmd.MOVE_F), acmd.MoveCommand(acmd.TURN_L)])
-    d2 = Droid('enemy', Vector2D(320.0, 160.0), 0.0, 0xffff00ff, [acmd.MoveCommand(acmd.MOVE_B), acmd.MoveCommand(acmd.TURN_L)])
+    d1 = Droid('player', Vector2D(320.0, 480.0), 0.0, (255, 0, 0, 255), [acmd.MoveCommand(acmd.MOVE_F), acmd.MoveCommand(acmd.TURN_L)])
+    d2 = Droid('enemy', Vector2D(320.0, 160.0), 0.0, (0, 255, 0, 255), [acmd.MoveCommand(acmd.MOVE_B), acmd.MoveCommand(acmd.TURN_L)])
     g.add_droid(d1)
     g.add_droid(d2)
     g.run()

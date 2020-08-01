@@ -1,12 +1,12 @@
 import math
 from arena.vector import Vector2D
 import arena.command as acmd
-from typing import List
+from typing import List, Tuple
 
 
 class Droid:
     def __init__(self, id: str, init_pos: Vector2D, init_rot: float,
-                 color: int,
+                 color: Tuple[int, int, int, int],
                  cmds: List[acmd.Command]=[]) -> None:
         self.id = id # 識別ID
         self.pos = init_pos # 位置
@@ -34,9 +34,9 @@ class Droid:
         elif cmd.type == acmd.MOVE_B:
             self.pos -= self.front_vec * env.dt * 17.0
         elif cmd.type == acmd.TURN_L:
-            self.rot += math.pi / 2.0 / self._cmd_timeout * env.dt
-        elif cmd.type == acmd.TURN_R:
             self.rot -= math.pi / 2.0 / self._cmd_timeout * env.dt
+        elif cmd.type == acmd.TURN_R:
+            self.rot += math.pi / 2.0 / self._cmd_timeout * env.dt
 
     def _update_command(self, env) -> None:
         self._cmd_exec_time += env.dt
