@@ -28,6 +28,7 @@ class Droid:
         self._cmd_timeout = 1.0 # 最大命令実行時間
         self._cmd_executed = False
         self._cmd_angular_speed = None
+        self.adm = (5, 5, 5) # Attack, Defence, Movement
     
     def set_commands(self, cmds: List[acmd.Command]) -> None:
         self._cmds = cmds
@@ -42,9 +43,9 @@ class Droid:
         self._update_command(env)
         cmd = self._cmds[self._cmd_index]
         if cmd.type == acmd.MOVE_F:
-            self.pos += self.front_vec * env.dt * 30.0
+            self.pos += self.front_vec * env.dt * (self.adm[2] * 10.0)
         elif cmd.type == acmd.MOVE_B:
-            self.pos -= self.front_vec * env.dt * 30.0
+            self.pos -= self.front_vec * env.dt * (self.adm[2] * 10.0)
         elif cmd.type == acmd.TURN_L:
             self.rot -= math.pi / 2.0 / self._cmd_timeout * env.dt
         elif cmd.type == acmd.TURN_R:
@@ -58,8 +59,9 @@ class Droid:
             self.rot -= self._cmd_angular_speed * env.dt
         elif cmd.type == acmd.SHOT_SHELL:
             if not self._cmd_executed:
-                env.new_shot(Shell(self.team, 5, self.pos, self.front_vec*200, 15.0))
+                env.new_shot(Shell(self.team, self.adm[0], self.pos, self.front_vec*200, 15.0))
                 self._cmd_executed = True
+                self._next_command_in(0.5)
 
     def _update_command(self, env) -> None:
         self._cmd_exec_time += env.dt
@@ -70,6 +72,17 @@ class Droid:
             self._cmd_index += 1
             if self._cmd_index >= len(self._cmds):
                 self._cmd_index = 0
+            self._update_timeout()
+    
+    def _update_timeout(self) -> None:
+        cmd = self._cmds[self._cmd_index]
+        if cmd in [acmd.TURN_ENEMY, acmd.TURN_L, acmd.TURN_R]:
+            self._cmd_timeout = 6.0 - 0.6 * self.adm[2]
+        else:
+            self._cmd_timeout = 3.0
+    
+    def _next_command_in(self, secs: float) -> None:
+        self._cmd_exec_time = self._cmd_timeout - secs
     
     def hit(self, shot: 'Shot') -> None:
         self.hp -= shot.attack

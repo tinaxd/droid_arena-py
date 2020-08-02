@@ -158,9 +158,11 @@ if __name__ == '__main__':
                [acmd.MoveCommand(acmd.MOVE_F),
                 acmd.MoveCommand(acmd.TURN_ENEMY),
                 acmd.ShotCommand(acmd.SHOT_SHELL)])
+    d1.adm = (5, 5, 5)
     d2 = Droid('enemy', 1, Vector2D(320.0, 160.0), 0.0, 50, (0, 255, 0, 255),
                [acmd.MoveCommand(acmd.MOVE_B),
                 acmd.MoveCommand(acmd.TURN_L)])
+    d2.adm = (1, 5, 9)
     #d3 = ScriptedDroid('spectator', 2, Vector2D(160.0, 320.0), 0.0, 50, (0, 0, 255, 255), src)
     g.add_droid(d1)
     g.add_droid(d2)
