@@ -58,7 +58,7 @@ class Droid:
             self.rot -= self._cmd_angular_speed * env.dt
         elif cmd.type == acmd.SHOT_SHELL:
             if not self._cmd_executed:
-                env.new_shot(Shell(self.team, 5, self.pos, self.front_vec*100, 30.0))
+                env.new_shot(Shell(self.team, 5, self.pos, self.front_vec*200, 15.0))
                 self._cmd_executed = True
 
     def _update_command(self, env) -> None:
