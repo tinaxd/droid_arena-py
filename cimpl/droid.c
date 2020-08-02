@@ -118,15 +118,26 @@ void next_command_command_drv_(DroidState *droid, struct Environment *env)
     case DROID_CMD_TURN_ENEMY:
     {
         DroidState *target = env_query_nearest_enemy(env, droid);
-        float rx = target->x - droid->x;
-        float ry = target->y - droid->y;
-        float angle = acosf(vec_dot(fx, fy, rx, ry) / vec_length(rx, ry));
-        droid->rot -= angle / drv->cmd_timeout_ * env->dt;
+        if (target)
+        {
+            float rx = target->x - droid->x;
+            float ry = target->y - droid->y;
+            float angle = acosf(vec_dot(fx, fy, rx, ry) / vec_length(rx, ry));
+            if (fabsf(angle) < 0.04)
+            {
+                next_command_in(drv, 0.0);
+            }
+            else
+            {
+                droid->rot -= angle / fabsf(angle) * droid->spec.movement * env->dt;
+            }
+        }
         break;
     }
     case DROID_CMD_SHOT_SHELL:
     {
-        if (!drv->cmd_executed_) {
+        if (!drv->cmd_executed_)
+        {
             env_new_shot(env, make_shell_shot(droid->team, droid->spec.attack, droid->x, droid->y, fx * 200, fy * 200, 15));
             drv->cmd_executed_ = 1;
             next_command_in(drv, 0.5);

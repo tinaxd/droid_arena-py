@@ -41,15 +41,18 @@ void droid_list_remove_destroyed(DroidList *list)
 {
     int removed = 0;
     size_t index = 0;
-    for (size_t i=0; i<list->n; i++) {
-        if (list->droids[i]->destroyed) {
+    for (size_t i = 0; i < list->n; i++)
+    {
+        if (list->droids[i]->destroyed)
+        {
             index = i;
             removed = 1;
             break;
         }
     }
 
-    if (removed) {
+    if (removed)
+    {
         DroidState *tmp = list->droids[index];
         list->droids[index] = list->droids[list->n - 1];
         list->droids[list->n - 1] = tmp;
@@ -98,15 +101,18 @@ void shot_list_remove_destroyed(ShotList *list)
 {
     int removed = 0;
     size_t index = 0;
-    for (size_t i=0; i<list->n; i++) {
-        if (list->shots[i]->destroyed) {
+    for (size_t i = 0; i < list->n; i++)
+    {
+        if (list->shots[i]->destroyed)
+        {
             index = i;
             removed = 1;
             break;
         }
     }
 
-    if (removed) {
+    if (removed)
+    {
         Shot *tmp = list->shots[index];
         list->shots[index] = list->shots[list->n - 1];
         list->shots[list->n - 1] = tmp;
@@ -197,10 +203,11 @@ void game_run(GameInstance *game)
 
 void game_apply_env(GameInstance *game, struct Environment *env)
 {
-    for (size_t i=0; i<env->n_shots_queue_; i++) {
+    for (size_t i = 0; i < env->n_shots_queue_; i++)
+    {
         game_add_shot(game, env->shots_queue_[i]);
     }
-    
+
     free(env->shots_queue_);
     env->shots_queue_ = NULL;
     env->n_shots_queue_ = 0;
@@ -280,8 +287,8 @@ void game_render(GameInstance *game)
         // 体力バー
         int hp_start_x = droid->x - droid_radius;
         int hp_start_y = droid->y - droid_radius - hp_height;
-        int hp_end_x   = hp_start_x + 2.0 * droid_radius * ((float)droid->hp / droid->maxhp);
-        int hp_end_y   = droid->y - droid_radius;
+        int hp_end_x = hp_start_x + 2.0 * droid_radius * ((float)droid->hp / droid->maxhp);
+        int hp_end_y = droid->y - droid_radius;
         rectangleRGBA(game->renderer, hp_start_x, hp_start_y, droid->x + droid_radius, hp_end_y, 0, 0, 0, 255);
         boxRGBA(game->renderer, hp_start_x, hp_start_y, hp_end_x, hp_end_y, 0, 0, 0, 255);
     }
