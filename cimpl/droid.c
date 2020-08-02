@@ -119,7 +119,7 @@ void next_command_command_drv_(DroidState *droid, struct Environment *env)
     case DROID_CMD_SHOT_SHELL:
     {
         if (!drv->cmd_executed_) {
-            env_new_shot(env, make_shell_shot(droid->team, 5, droid->x, droid->y, fx * 100, fy * 100, 30));
+            env_new_shot(env, make_shell_shot(droid->team, 5, droid->x, droid->y, fx * 200, fy * 200, 15));
             drv->cmd_executed_ = 1;
         }
         break;
