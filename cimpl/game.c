@@ -128,9 +128,12 @@ GameInstance *new_game_instance()
     GameInstance *game = (GameInstance *)malloc(sizeof(GameInstance));
     assert(game != NULL);
 
+    game->width = 640;
+    game->height = 640;
+
     game->window = SDL_CreateWindow("Droid Arena",
                                     SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                    640, 640, SDL_WINDOW_SHOWN);
+                                    game->width, game->height, SDL_WINDOW_SHOWN);
     if (!game->window)
     {
         return NULL;
@@ -214,6 +217,30 @@ void game_apply_env(GameInstance *game, struct Environment *env)
     env->c_shots_queue_ = 0;
 }
 
+void game_droid_boundary_check(GameInstance *game)
+{
+    for (size_t i = 0; i < game->droids->n; i++)
+    {
+        DroidState *droid = game->droids->droids[i];
+        if (droid->x < 0)
+        {
+            droid->x = 0;
+        }
+        else if (droid->x > game->width)
+        {
+            droid->x = game->width - 1.0;
+        }
+        if (droid->y < 0)
+        {
+            droid->y = 0;
+        }
+        else if (droid->y > game->height)
+        {
+            droid->y = game->height - 1.0;
+        }
+    }
+}
+
 void game_process(GameInstance *game, uint32_t delta)
 {
     struct Environment env;
@@ -229,6 +256,7 @@ void game_process(GameInstance *game, uint32_t delta)
         next_command(game->droids->droids[i], &env);
     }
     game_apply_env(game, &env);
+    game_droid_boundary_check(game);
 
     for (size_t i = 0; i < game->shots->n; i++)
     {

@@ -26,6 +26,7 @@ void shot_list_add(ShotList *list, Shot *shot);
 void shot_list_remove_destroyed(ShotList *list);
 
 typedef struct {
+    int width, height;
     SDL_Window *window;
     SDL_Renderer *renderer;
     DroidList *droids;

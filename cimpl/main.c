@@ -19,12 +19,12 @@ int main(int argc, char **argv)
     d1->driver = make_cmd_driver(3, d1cmds);
 
     ColorRGBA d2color = {0, 255, 0, 255};
-    DroidCommand d2cmds[] = {DROID_CMD_MOVE_B, DROID_CMD_TURN_L};
+    DroidCommand d2cmds[] = {DROID_CMD_TURN_ENEMY, DROID_CMD_SHOT_SHELL, DROID_CMD_TURN_L, DROID_CMD_MOVE_F};
     DroidState *d2 = make_droid("enemy", 1, 320, 160, 0, 50, d2color, DROID_COMMAND);
     d2->spec.attack = 1;
     d2->spec.defence = 5;
     d2->spec.movement = 9;
-    d2->driver = make_cmd_driver(2, d2cmds);
+    d2->driver = make_cmd_driver(4, d2cmds);
 
     game_add_droid(game, d1);
     game_add_droid(game, d2);
