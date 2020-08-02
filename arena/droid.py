@@ -8,6 +8,7 @@ import lupa # type: ignore
 
 if TYPE_CHECKING:
     from .shot import Shot
+    from .game import Environment
 
 
 class Droid:
@@ -27,7 +28,6 @@ class Droid:
         self._cmd_exec_time = 0.0 # 現在の命令の実行時間
         self._cmd_timeout = 1.0 # 最大命令実行時間
         self._cmd_executed = False
-        self._cmd_angular_speed = None
         self.adm = (5, 5, 5) # Attack, Defence, Movement
     
     def set_commands(self, cmds: List[acmd.Command]) -> None:
@@ -39,7 +39,7 @@ class Droid:
     def front_vec(self) -> Vector2D:
         return Vector2D(math.cos(self.rot), math.sin(self.rot))
 
-    def next_command(self, env) -> None:
+    def next_command(self, env: 'Environment') -> None:
         self._update_command(env)
         cmd = self._cmds[self._cmd_index]
         if cmd.type == acmd.MOVE_F:
@@ -51,12 +51,14 @@ class Droid:
         elif cmd.type == acmd.TURN_R:
             self.rot += math.pi / 2.0 / self._cmd_timeout * env.dt
         elif cmd.type == acmd.TURN_ENEMY:
-            if not self._cmd_angular_speed:
-                target = env.find_nearest_enemy(self)
+            target = env.find_nearest_enemy(self)
+            if target:
                 r = target.pos - self.pos
                 angle = math.acos(self.front_vec.dot(r) / r.length())
-                self._cmd_angular_speed = - angle / self._cmd_timeout
-            self.rot -= self._cmd_angular_speed * env.dt
+                if math.fabs(angle) < 0.01:
+                    self._next_command_in(0.0)
+                else:
+                    self.rot -= angle / math.fabs(angle) * self.adm[2] * env.dt
         elif cmd.type == acmd.SHOT_SHELL:
             if not self._cmd_executed:
                 env.new_shot(Shell(self.team, self.adm[0], self.pos, self.front_vec*200, 15.0))
@@ -66,20 +68,11 @@ class Droid:
     def _update_command(self, env) -> None:
         self._cmd_exec_time += env.dt
         if self._cmd_exec_time > self._cmd_timeout:
-            self._cmd_angular_speed = None
             self._cmd_executed = False
             self._cmd_exec_time = 0.0
             self._cmd_index += 1
             if self._cmd_index >= len(self._cmds):
                 self._cmd_index = 0
-            self._update_timeout()
-    
-    def _update_timeout(self) -> None:
-        cmd = self._cmds[self._cmd_index]
-        if cmd in [acmd.TURN_ENEMY, acmd.TURN_L, acmd.TURN_R]:
-            self._cmd_timeout = 6.0 - 0.6 * self.adm[2]
-        else:
-            self._cmd_timeout = 3.0
     
     def _next_command_in(self, secs: float) -> None:
         self._cmd_exec_time = self._cmd_timeout - secs

@@ -9,10 +9,17 @@ import arena.command as acmd
 import math
 
 
+class GameFinish(Exception):
+    def __init__(self, msg: str, win_team: int) -> None:
+        super(GameFinish, self).__init__(msg)
+        self.win_team = win_team
+
+
 class Game:
     def __init__(self) -> None:
         sdl2.ext.init()
-        self.window = sdl2.ext.Window("Droid Arena", size=(640, 640))
+        self.size = (640, 640)
+        self.window = sdl2.ext.Window("Droid Arena", size=self.size)
         self.window.show()
         self.renderer = sdl2.ext.Renderer(self.window)
         self.factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=self.renderer)
@@ -34,20 +41,45 @@ class Game:
             curr = sdl2.SDL_GetTicks()
             delta = curr - self.lasttime
             self.lasttime = curr
-            self._process(delta)
-            self._process_collision(delta)
-            self._render()
-            self.renderer.present()
+            try:
+                self._process(delta)
+                self._process_collision(delta)
+                self._render()
+                self.renderer.present()
+            except GameFinish as e:
+                print(f'team {e.win_team} won')
+                quit = True
         sdl2.ext.quit()
     
     def _process(self, mdelta) -> None:
         env = Environment(mdelta / 1000.0, self.droids)
+        teams = set()
         for droid in self.droids:
+            teams.add(droid.team)
             droid.next_command(env)
+        if (len(teams) == 1):
+            self._game_finish(teams.pop())
         self._apply_env_changes(env)
+        self._droid_boundary_check()
+
         for shot in self.shots:
             shot.process(env)
         self._apply_env_changes(env)
+    
+    def _game_finish(self, team: int) -> None:
+        raise GameFinish("game ends", team)
+    
+    def _droid_boundary_check(self) -> None:
+        for droid in self.droids:
+            x, y = droid.pos.unpack()
+            if x < 0:
+                droid.pos.x = 0.0
+            elif x > self.size[0]:
+                droid.pos.x = self.size[0] - 1.0
+            if y < 0:
+                droid.pos.y = 0.0
+            elif y > self.size[1]:
+                droid.pos.y = self.size[1] - 1.0
     
     def _process_collision(self, mdelta) -> None:
         for shot in self.shots:
@@ -160,8 +192,10 @@ if __name__ == '__main__':
                 acmd.ShotCommand(acmd.SHOT_SHELL)])
     d1.adm = (5, 5, 5)
     d2 = Droid('enemy', 1, Vector2D(320.0, 160.0), 0.0, 50, (0, 255, 0, 255),
-               [acmd.MoveCommand(acmd.MOVE_B),
-                acmd.MoveCommand(acmd.TURN_L)])
+               [acmd.MoveCommand(acmd.TURN_ENEMY),
+                acmd.MoveCommand(acmd.SHOT_SHELL),
+                acmd.MoveCommand(acmd.TURN_L),
+                acmd.MoveCommand(acmd.MOVE_F)])
     d2.adm = (1, 5, 9)
     #d3 = ScriptedDroid('spectator', 2, Vector2D(160.0, 320.0), 0.0, 50, (0, 0, 255, 255), src)
     g.add_droid(d1)
