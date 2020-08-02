@@ -14,6 +14,7 @@ DroidState *make_droid(const char *id, int team, float x, float y, float rot, in
     droid->y = y;
     droid->rot = rot;
     droid->hp = hp;
+    droid->maxhp = hp;
     droid->destroyed = 0;
     droid->color = color;
     droid->type = ty;

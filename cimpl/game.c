@@ -37,7 +37,28 @@ void droid_list_add(DroidList *list, DroidState *droid)
     list->n++;
 }
 
-//void droid_list_remove_destroyed(DroidList *list);
+void droid_list_remove_destroyed(DroidList *list)
+{
+    int removed = 0;
+    size_t index = 0;
+    for (size_t i=0; i<list->n; i++) {
+        if (list->droids[i]->destroyed) {
+            index = i;
+            removed = 1;
+            break;
+        }
+    }
+
+    if (removed) {
+        DroidState *tmp = list->droids[index];
+        list->droids[index] = list->droids[list->n - 1];
+        list->droids[list->n - 1] = tmp;
+        free_droid(list->droids[list->n - 1]);
+        list->droids[list->n - 1] = NULL;
+        list->n--;
+        droid_list_remove_destroyed(list);
+    }
+}
 
 ShotList *init_shot_list()
 {
@@ -230,6 +251,7 @@ void game_process_collision(GameInstance *game, uint32_t delta)
         }
     }
     shot_list_remove_destroyed(game->shots);
+    droid_list_remove_destroyed(game->droids);
 }
 
 void game_render(GameInstance *game)
@@ -241,17 +263,27 @@ void game_render(GameInstance *game)
     int droid_radius = 30;
     int droid_dot_rad = 5;
     int droid_dot_from_center = 15;
+    int hp_height = 5;
     for (size_t i = 0; i < game->droids->n; i++)
     {
         const DroidState *droid = game->droids->droids[i];
+        // 本体
         ColorRGBA color = droid->color;
         filledCircleRGBA(game->renderer, droid->x, droid->y,
                          droid_radius, color.r, color.g, color.b, color.a);
+        // ドット
         ColorRGBA cc = color_complement(color);
         filledCircleRGBA(game->renderer,
                          droid->x + droid_dot_from_center * cos(droid->rot),
                          droid->y + droid_dot_from_center * sin(droid->rot),
                          droid_dot_rad, cc.r, cc.g, cc.b, cc.a);
+        // 体力バー
+        int hp_start_x = droid->x - droid_radius;
+        int hp_start_y = droid->y - droid_radius - hp_height;
+        int hp_end_x   = hp_start_x + 2.0 * droid_radius * ((float)droid->hp / droid->maxhp);
+        int hp_end_y   = droid->y - droid_radius;
+        rectangleRGBA(game->renderer, hp_start_x, hp_start_y, droid->x + droid_radius, hp_end_y, 0, 0, 0, 255);
+        boxRGBA(game->renderer, hp_start_x, hp_start_y, hp_end_x, hp_end_y, 0, 0, 0, 255);
     }
 
     // Draw shots

@@ -46,6 +46,7 @@ typedef struct
     float y;
     float rot;
     int hp;
+    int maxhp;
     int destroyed;
     ColorRGBA color;
     DroidType type;
