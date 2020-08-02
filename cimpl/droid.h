@@ -40,6 +40,13 @@ typedef enum
 
 typedef struct
 {
+    int attack;
+    int defence;
+    int movement;
+} DroidSpec;
+
+typedef struct
+{
     char *id;
     int team;
     float x;
@@ -50,6 +57,7 @@ typedef struct
     int destroyed;
     ColorRGBA color;
     DroidType type;
+    DroidSpec spec;
     void *driver;
 } DroidState;
 

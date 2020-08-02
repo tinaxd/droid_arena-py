@@ -18,6 +18,9 @@ DroidState *make_droid(const char *id, int team, float x, float y, float rot, in
     droid->destroyed = 0;
     droid->color = color;
     droid->type = ty;
+    droid->spec.attack = 5;
+    droid->spec.defence = 5;
+    droid->spec.movement = 5;
     return droid;
 }
 
@@ -84,6 +87,11 @@ void command_drv_update_command(DroidCommandDriver *drv, const struct Environmen
     }
 }
 
+void next_command_in(DroidCommandDriver *drv, float secs)
+{
+    drv->cmd_exec_time_ = drv->cmd_timeout_ - secs;
+}
+
 void next_command_command_drv_(DroidState *droid, struct Environment *env)
 {
     DroidCommandDriver *drv = (DroidCommandDriver *)droid->driver;
@@ -94,12 +102,12 @@ void next_command_command_drv_(DroidState *droid, struct Environment *env)
     switch (drv->cmds[drv->cmd_index_])
     {
     case DROID_CMD_MOVE_F:
-        droid->x += fx * env->dt * 30.0;
-        droid->y += fy * env->dt * 30.0;
+        droid->x += fx * env->dt * droid->spec.movement * 10.0;
+        droid->y += fy * env->dt * droid->spec.movement * 10.0;
         break;
     case DROID_CMD_MOVE_B:
-        droid->x -= fx * env->dt * 30.0;
-        droid->y -= fy * env->dt * 30.0;
+        droid->x -= fx * env->dt * droid->spec.movement * 10.0;
+        droid->y -= fy * env->dt * droid->spec.movement * 10.0;
         break;
     case DROID_CMD_TURN_L:
         droid->rot -= M_PI / 2.0 / drv->cmd_timeout_ * env->dt;
@@ -119,8 +127,9 @@ void next_command_command_drv_(DroidState *droid, struct Environment *env)
     case DROID_CMD_SHOT_SHELL:
     {
         if (!drv->cmd_executed_) {
-            env_new_shot(env, make_shell_shot(droid->team, 5, droid->x, droid->y, fx * 200, fy * 200, 15));
+            env_new_shot(env, make_shell_shot(droid->team, droid->spec.attack, droid->x, droid->y, fx * 200, fy * 200, 15));
             drv->cmd_executed_ = 1;
+            next_command_in(drv, 0.5);
         }
         break;
     }
