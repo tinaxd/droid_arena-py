@@ -174,7 +174,7 @@ void game_add_shot(GameInstance *game, Shot *shot)
     shot_list_add(game->shots, shot);
 }
 
-void game_process(GameInstance *game, uint32_t delta);
+int game_process(GameInstance *game, uint32_t delta);
 void game_process_collision(GameInstance *game, uint32_t delta);
 void game_render(GameInstance *game);
 
@@ -196,7 +196,12 @@ void game_run(GameInstance *game)
         uint32_t curr = SDL_GetTicks();
         uint32_t delta = curr - game->lasttime;
         game->lasttime = curr;
-        game_process(game, delta);
+        int team;
+        if ((team = game_process(game, delta) != -1))
+        {
+            printf("team %d won\n", team);
+            //quit = 1;
+        }
         game_process_collision(game, delta);
         game_render(game);
         SDL_RenderPresent(game->renderer);
@@ -241,7 +246,7 @@ void game_droid_boundary_check(GameInstance *game)
     }
 }
 
-void game_process(GameInstance *game, uint32_t delta)
+int game_process(GameInstance *game, uint32_t delta)
 {
     struct Environment env;
     env.dt = delta / 1000.0;
@@ -251,10 +256,20 @@ void game_process(GameInstance *game, uint32_t delta)
     env.c_shots_queue_ = 0;
     env.shots_queue_ = NULL;
 
+    int win_team = -2;
     for (size_t i = 0; i < game->droids->n; i++)
     {
-        next_command(game->droids->droids[i], &env);
+        DroidState *droid = game->droids->droids[i];
+        if (win_team == -1)
+            ;
+        else if (win_team == -2)
+            win_team = droid->team;
+        else if (win_team != droid->team)
+            win_team = -1;
+        next_command(droid, &env);
     }
+    if (win_team != -1 && win_team != -2)
+        return win_team;
     game_apply_env(game, &env);
     game_droid_boundary_check(game);
 
@@ -263,6 +278,8 @@ void game_process(GameInstance *game, uint32_t delta)
         shot_process(game->shots->shots[i], &env);
     }
     game_apply_env(game, &env);
+
+    return -1;
 }
 
 void game_process_collision(GameInstance *game, uint32_t delta)
