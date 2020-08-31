@@ -4,7 +4,7 @@
 DroidState *env_query_nearest_enemy(const struct Environment *env, const DroidState *self)
 {
     DroidState *target = NULL;
-    float distance = MAXFLOAT;
+    float distance = FLT_MAX;
     for (size_t i = 0; i < env->n_droids_; i++)
     {
         DroidState *droid = env->droids_[i];

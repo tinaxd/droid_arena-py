@@ -7,7 +7,11 @@ set (CMAKE_C_STANDARD 11)
 find_package (PkgConfig REQUIRED)
 
 pkg_check_modules (SDL2 REQUIRED sdl2)
-pkg_check_modules (SDL2GFX REQUIRED sdl2_gfx)
+pkg_check_modules (SDL2GFX sdl2_gfx)
+if (NOT SDL2GFX_FOUND)
+  message ("pkg-config of sdl2_gfx not found. Assuming it is installed anyway.")
+  set (SDL2GFX_LINK_LIBRARIES ${SDL2_LIBRARIES}_gfx)
+endif ()
 
 add_executable (droid_arena
   main.c
@@ -17,4 +21,4 @@ add_executable (droid_arena
   shot.c
 )
 target_include_directories (droid_arena PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries (droid_arena ${SDL2_LINK_LIBRARIES} ${SDL2GFX_LINK_LIBRARIES})
+target_link_libraries (droid_arena m ${SDL2_LINK_LIBRARIES} ${SDL2GFX_LINK_LIBRARIES})
