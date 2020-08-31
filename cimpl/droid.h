@@ -17,6 +17,7 @@ typedef enum
     DROID_CMD_TURN_R,
     DROID_CMD_TURN_ENEMY,
     DROID_CMD_SHOT_SHELL,
+    DROID_CMD_SHOT_RANGE,
 } DroidCommand;
 
 typedef struct

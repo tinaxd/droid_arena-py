@@ -55,6 +55,7 @@ void free_cmd_driver(DroidCommandDriver *driver)
 {
     free(driver->cmds);
     driver->cmds = NULL;
+    free(driver);
 }
 
 void next_command_command_drv_(DroidState *droid, struct Environment *env);

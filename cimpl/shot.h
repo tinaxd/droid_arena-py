@@ -6,6 +6,7 @@
 typedef enum
 {
     SHOT_SHELL,
+    SHOT_RANGE,
 } ShotType;
 
 struct ShellShotData
@@ -14,6 +15,11 @@ struct ShellShotData
     float life;
     float maxlife;
     float radius;
+};
+
+struct RangeShotData
+{
+
 };
 
 struct Shot
