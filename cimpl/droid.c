@@ -145,6 +145,33 @@ void next_command_command_drv_(DroidState *droid, struct Environment *env)
         }
         break;
     }
+    case DROID_CMD_SHOT_RANGE:
+    {
+        if (!drv->cmd_executed_)
+        {
+            env_new_shot(env, make_range_shot(droid->team, droid->spec.attack / 3, droid->x, droid->y, 30, 45));
+            drv->cmd_executed_ = 1;
+            next_command_in(drv, 0.5);
+        }
+        break;
+    }
+    case DROID_CMD_SHOT_CHARGED_LINEAR:
+    {
+        // チャージタイムを設定
+        if (!drv->cmd_executed_ && drv->cmd_exec_time_ > drv->cmd_timeout_ / 2.0)
+        {
+            float angle = droid->rot; // angle must be [-pi pi]
+            while (1)
+            {
+                if (angle < -M_PI) angle += M_PI * 2;
+                else if (angle > M_PI) angle -= M_PI * 2;
+                else break;
+            }
+            env_new_shot(env, make_charged_linear_shot(droid->team, droid->spec.attack * 3, droid->x, droid->y, angle, 3));
+            drv->cmd_executed_ = 1;
+        }
+        break;
+    }
     }
 }
 

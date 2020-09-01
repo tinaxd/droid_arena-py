@@ -7,6 +7,7 @@ typedef enum
 {
     SHOT_SHELL,
     SHOT_RANGE,
+    SHOT_CHARGED_LINEAR,
 } ShotType;
 
 struct ShellShotData
@@ -19,7 +20,18 @@ struct ShellShotData
 
 struct RangeShotData
 {
+    float radius;
+    float vradius;
+    float max_life;
+    float life;
+};
 
+struct ChargedLinearShotData
+{
+    float max_life;
+    float life;
+    float angle;
+    float width;
 };
 
 struct Shot
@@ -35,6 +47,10 @@ struct Shot
 void free_shot(Shot *shot);
 
 void shot_process(Shot *shot, struct Environment *env);
-int shot_droid_hit(const Shot *shot, const DroidState *droid);
+int shot_droid_hit(Shot *shot, DroidState *droid);
 
 Shot *make_shell_shot(int shot_by, int attack, float x, float y, float vx, float vy, float radius);
+Shot *make_range_shot(int shot_by, int attack, float x, float y, float radius, float vradius);
+
+// angle must be [-pi pi]
+Shot *make_charged_linear_shot(int shot_by, int attack, float x, float y, float angle, float lifespan);

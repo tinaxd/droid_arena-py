@@ -297,7 +297,7 @@ void game_process_collision(GameInstance *game, uint32_t delta)
             if (shot_droid_hit(shot, droid))
             {
                 droid_hit(droid, shot);
-                shot->destroyed = 1;
+                // shot->destroyed = 1;
                 break;
             }
         }
@@ -349,6 +349,30 @@ void game_render(GameInstance *game)
             int radius = ((struct ShellShotData *)shot->data_)->radius;
             filledCircleRGBA(game->renderer,
                              shot->x, shot->y, radius, 0, 0, 0, 255);
+            break;
+        }
+        case SHOT_RANGE:
+        {
+            int radius = ((struct RangeShotData *)shot->data_)->radius;
+            circleRGBA(game->renderer,
+                       shot->x, shot->y, radius, 50, 0, 0, 255);
+            break;
+        }
+        case SHOT_CHARGED_LINEAR:
+        {
+            const struct ChargedLinearShotData *data = (struct ChargedLinearShotData *)shot->data_;
+            const int max_length = game->width > game->height ? game->width : game->height;
+            int16_t vx[4], vy[4];
+            vx[0] = shot->x + cosf(data->angle) * (data->width / 2);
+            vy[0] = shot->y + sinf(data->angle) * (data->width / 2);
+            vx[1] = shot->x - cosf(data->angle) * (data->width / 2);
+            vy[1] = shot->y - sinf(data->angle) * (data->width / 2);
+            vx[2] = vx[1] + cosf(data->angle) * max_length;
+            vy[2] = vy[1] + sinf(data->angle) * max_length;
+            vx[3] = vx[0] + cosf(data->angle) * max_length;
+            vy[3] = vy[0] + sinf(data->angle) * max_length;
+            filledPolygonRGBA(game->renderer, vx, vy, 4, 80, 80, 80, 200);
+            break;
         }
         }
     }
