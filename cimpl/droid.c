@@ -28,6 +28,7 @@ void free_droid(DroidState *droid)
 {
     free(droid->id);
     droid->id = NULL;
+    free(droid);
 }
 
 void front_vector(const DroidState *droid, float *x, float *y)

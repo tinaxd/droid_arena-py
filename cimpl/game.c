@@ -17,7 +17,6 @@ void free_droid_list(DroidList *list)
     for (size_t i = 0; i < list->n; i++)
     {
         free_droid(list->droids[i]);
-        free(list->droids[i]);
     }
     free(list->droids);
     list->n = 0;
